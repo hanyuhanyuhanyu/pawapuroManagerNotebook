@@ -1,6 +1,10 @@
 <template>
   <div>
     <div class="component">
+      <PlayerBasicsEditter
+        :player="player"
+        :year="year"
+      />
       <BasicFielderAbilities :player="player"/>
       <BasicPitcherAbilities :player="player"/>
     </div>
@@ -15,6 +19,7 @@ import BasicPitcherAbilities from "../../components/pitcherAbilities/index.vue"
 import { hShoot } from '../../defs/abilities/breakBallAbilities';
 import { Player } from '../../defs/player';
 import { defaultInformation, PlayerBasics } from '../../defs/playerBasics';
+import PlayerBasicsEditter from "../../components/player/basicsEditter.vue"
 const testPlayer = new PlayerAbility({
   basic: {
     ballSpeed: 140,
@@ -91,6 +96,7 @@ const testPlayer = new PlayerAbility({
 
 @Component({
   components: {
+    PlayerBasicsEditter,
     BasicFielderAbilities,
     BasicPitcherAbilities
   }

@@ -102,5 +102,3 @@ export default class NewBallAbilityInput extends Vue {
     appearance: none;
   }
 </style>
-
-

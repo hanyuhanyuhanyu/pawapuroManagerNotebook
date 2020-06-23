@@ -4,6 +4,17 @@
       <li>
         {{abilityBallSpeed.ability.name}}: {{abilityBallSpeed.value}}km/h <NumericAbilityInput :player="player" :property="ballSpeed" :initial="abilityBallSpeed.value" />
       </li>
+      <span
+        v-for="position in allAptitude"
+        :key="position"
+      >
+        {{aptitudesName(position)}}
+        <input
+          type="checkbox"
+          :value="position"
+          v-model="player.pitcherAptitude"
+        >
+      </span>
       <li v-for="{ability, alphabeticalValue, value, key} in abilities" :key="key">
         {{ability.name}}: {{alphabeticalValue}}({{value}}) <NumericAbilityInput :player="player" :property="key" :initial="value" />
       </li>
@@ -18,7 +29,7 @@ import { AbilityWithValue, basicPitcherAbilityNamesExceptBallSpeed, ballSpeed } 
 import { getValue, getAlphabeticalValue } from '../../defs/abilities/toggleAbilityUtil';
 import { Player } from "../../defs/player"
 import NumericAbilityInput from "../parts/NumericAbilityInput.vue"
-import { elevation } from '../../defs/abilities/fielderAbilities';
+import { PitcherDetailedPositionNames, positionAbilityDefinitions, pitcherDetailedNames } from '../../defs/abilities/positionsAbility';
 
 @Component({
   components: {
@@ -49,6 +60,12 @@ export default class BasicPitcherAbility extends Vue {
       }
     })
     return ret
+  }
+  get allAptitude(): PitcherDetailedPositionNames[] {
+    return pitcherDetailedNames
+  }
+  get aptitudesName(): (pos: PitcherDetailedPositionNames) => string {
+    return (pos: PitcherDetailedPositionNames) => positionAbilityDefinitions[pos].name
   }
 }
 </script>

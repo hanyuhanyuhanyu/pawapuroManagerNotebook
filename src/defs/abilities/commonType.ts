@@ -1,4 +1,9 @@
 import { CommonDisplayer, isCommondDisplayer } from "../commonDisplayer";
+import {
+  closer,
+  PitcherDetailedPositionNames,
+  pitcherDetailedNames,
+} from "./positionsAbility";
 export const breakingBall = "breaking ball";
 export const chance = "chance";
 export const vsLeftyPitcher = "vsLeftyPitcher";
@@ -221,17 +226,21 @@ export const basicPitcherAbilityNamesExceptBallSpeed: BasicPitcherAbilityNames[]
   controll,
 ];
 export type BasicPitcherAbilityNames =
+  | PitcherDetailedPositionNames
   | typeof ballSpeed
   | typeof stamina
   | typeof controll;
 export const basicPitcherAbilityNames: BasicPitcherAbilityNames[] = [
-  ballSpeed,
   ...basicPitcherAbilityNamesExceptBallSpeed,
+  ballSpeed,
 ];
 export function isBasicPitcherAbilityNames(
   s: string
 ): s is BasicPitcherAbilityNames {
-  return basicPitcherAbilityNames.includes(s as BasicPitcherAbilityNames);
+  return (
+    basicPitcherAbilityNames.includes(s as BasicPitcherAbilityNames) ||
+    pitcherDetailedNames.includes(s as PitcherDetailedPositionNames)
+  );
 }
 
 export const ballDirections = [right, rightDown, down, leftDown, left];

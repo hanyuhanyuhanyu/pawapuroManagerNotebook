@@ -3,6 +3,10 @@ import {
   isPositionNames,
   integratePosition,
   detailedPositionNames,
+  reliever,
+  pitcherDetailedNames,
+  PitcherDetailedPositionNames,
+  fielderPositionNames,
 } from "./abilities/positionsAbility";
 import {
   BreakingBallNames,
@@ -29,7 +33,6 @@ import {
   isSettableForAbility,
   findAbilityDefinition,
   settableStringValue,
-  abilities,
 } from "./abilities/abilities";
 import { Either, Left, Right } from "@/util/either";
 import {
@@ -47,7 +50,6 @@ import {
   PitcherTogglableAbilityNames,
   pitcherTogglableAbilityNames,
   isAbilityInterface,
-  BreakingBallAbility,
   isPitcherTogglableAbilityNames,
 } from "./abilities/commonType";
 
@@ -107,6 +109,9 @@ export const defaultPitcher: PitcherAbilitySet = {
     ballSpeed: 80,
     stamina: 1,
     controll: 1,
+    startingPitcher: 0,
+    relievePitcher: 0,
+    closingPitcher: 0,
   },
   special: {
     vsPinch: 3,
@@ -213,15 +218,28 @@ export type AbilitySettingErrorMessage =
   | typeof ABILITY_NOT_GET
   | typeof HAVING_BALL;
 
+export interface PlayerAbilityObject {
+  pitcherAbility: PitcherAbilitySet;
+  fielderAbility: FielderAbilitySet;
+}
 export class PlayerAbility {
   protected pitcherAbility: PitcherAbilitySet;
   protected fielderAbility: FielderAbilitySet;
+  public static deserialize(p: PlayerAbilityObject): PlayerAbility {
+    return new PlayerAbility(p.pitcherAbility, p.fielderAbility);
+  }
   constructor(
     p: PitcherAbilitySet = defaultPitcher,
     f: FielderAbilitySet = defaultFielder
   ) {
     this.pitcherAbility = p;
     this.fielderAbility = f;
+  }
+  public toObject(): PlayerAbilityObject {
+    return {
+      pitcherAbility: this.pitcherAbility,
+      fielderAbility: this.fielderAbility,
+    };
   }
 
   public getAbilities(): {
@@ -232,6 +250,31 @@ export class PlayerAbility {
       pitcher: this.pitcherAbilitiesWithValue,
       fielder: this.fielderAbilitiesWithValue,
     };
+  }
+  get sortedAvailablePositions(): DetailedPositionAbilityNames[] {
+    const pos: DetailedPositionAbilityNames[] = [];
+    if ((this.fielderAbilitiesWithValue.position.pitcher?.value || 0) > 0) {
+      pitcherDetailedNames.forEach((p) => {
+        if ((this.pitcherAbilitiesWithValue.basic[p]?.value || 0) > 0) {
+          pos.push(p);
+        }
+      });
+    }
+    fielderPositionNames
+      .map((f) => {
+        return {
+          name: f,
+          value: this.fielderAbilitiesWithValue.position[f].value,
+        };
+      })
+      .sort((a, b) => (a.value as number) - (b.value as number))
+      .reverse()
+      .forEach((f) => {
+        if ((f.value as number) > 0) {
+          pos.push(f.name);
+        }
+      });
+    return pos;
   }
   get fielderAbilitiesWithValue(): FielderAbilityWithValue {
     return {
@@ -309,16 +352,18 @@ export class PlayerAbility {
   }
   get pitcherBasicAbilities(): BasicPitcherAbilityWithValue {
     const ret: Record<string, AbilityWithValue> = {};
-    basicPitcherAbilityNames.forEach((s: BasicPitcherAbilityNames) => {
-      const abl = findAbilityDefinition(s);
-      if (abl === undefined) {
-        return;
-      }
-      ret[s] = {
-        ...abl,
-        value: this.pitcherAbility.basic[s],
-      };
-    });
+    basicPitcherAbilityNames
+      .concat(pitcherDetailedNames)
+      .forEach((s: BasicPitcherAbilityNames) => {
+        const abl = findAbilityDefinition(s);
+        if (abl === undefined) {
+          return;
+        }
+        ret[s] = {
+          ...abl,
+          value: this.pitcherAbility.basic[s],
+        };
+      });
     return ret;
   }
   get pitcherSpecialAbilities(): BasicPitcherSpecialAbilityWithValue {

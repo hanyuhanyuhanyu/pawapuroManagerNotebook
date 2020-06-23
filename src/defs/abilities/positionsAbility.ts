@@ -1,4 +1,4 @@
-import { integer, PositionAbility } from "./commonType";
+import { integer, PositionAbility, PitcherAbilityNames } from "./commonType";
 
 export const positionAbilityDefinitions: Record<
   DetailedPositionAbilityNames,
@@ -8,7 +8,7 @@ export const positionAbilityDefinitions: Record<
     name: "投手",
     abbreviation: "投",
     maximum: 100,
-    minimum: 1,
+    minimum: 0,
     kind: integer,
     number: new Set([1]),
   },
@@ -16,7 +16,7 @@ export const positionAbilityDefinitions: Record<
     name: "先発投手",
     abbreviation: "先",
     maximum: 100,
-    minimum: 1,
+    minimum: 0,
     kind: integer,
     number: new Set([1]),
   },
@@ -24,7 +24,7 @@ export const positionAbilityDefinitions: Record<
     name: "中継ぎ投手",
     abbreviation: "継",
     maximum: 100,
-    minimum: 1,
+    minimum: 0,
     kind: integer,
     number: new Set([1]),
   },
@@ -32,7 +32,7 @@ export const positionAbilityDefinitions: Record<
     name: "抑え投手",
     abbreviation: "抑",
     maximum: 100,
-    minimum: 1,
+    minimum: 0,
     kind: integer,
     number: new Set([1]),
   },
@@ -40,7 +40,7 @@ export const positionAbilityDefinitions: Record<
     name: "捕手",
     abbreviation: "捕",
     maximum: 100,
-    minimum: 1,
+    minimum: 0,
     kind: integer,
     number: new Set([2]),
   },
@@ -48,7 +48,7 @@ export const positionAbilityDefinitions: Record<
     name: "一塁手",
     abbreviation: "一",
     maximum: 100,
-    minimum: 1,
+    minimum: 0,
     kind: integer,
     number: new Set([3]),
   },
@@ -56,7 +56,7 @@ export const positionAbilityDefinitions: Record<
     name: "二塁手",
     abbreviation: "二",
     maximum: 100,
-    minimum: 1,
+    minimum: 0,
     kind: integer,
     number: new Set([4]),
   },
@@ -64,7 +64,7 @@ export const positionAbilityDefinitions: Record<
     name: "三塁手",
     abbreviation: "三",
     maximum: 100,
-    minimum: 1,
+    minimum: 0,
     kind: integer,
     number: new Set([5]),
   },
@@ -72,7 +72,7 @@ export const positionAbilityDefinitions: Record<
     name: "遊撃手",
     abbreviation: "遊",
     maximum: 100,
-    minimum: 1,
+    minimum: 0,
     kind: integer,
     number: new Set([6]),
   },
@@ -80,7 +80,7 @@ export const positionAbilityDefinitions: Record<
     name: "外野手",
     abbreviation: "外",
     maximum: 100,
-    minimum: 1,
+    minimum: 0,
     kind: integer,
     number: new Set([7, 8, 9]),
   },
@@ -88,7 +88,7 @@ export const positionAbilityDefinitions: Record<
     name: "右翼手",
     abbreviation: "右",
     maximum: 100,
-    minimum: 1,
+    minimum: 0,
     kind: integer,
     number: new Set([9]),
   },
@@ -96,7 +96,7 @@ export const positionAbilityDefinitions: Record<
     name: "中堅手",
     abbreviation: "中",
     maximum: 100,
-    minimum: 1,
+    minimum: 0,
     kind: integer,
     number: new Set([8]),
   },
@@ -104,7 +104,7 @@ export const positionAbilityDefinitions: Record<
     name: "左翼手",
     abbreviation: "左",
     maximum: 100,
-    minimum: 1,
+    minimum: 0,
     kind: integer,
     number: new Set([7]),
   },
@@ -144,14 +144,17 @@ export type DetailedPositionAbilityNames =
   | PositionAbilityNames
   | PitcherDetailedPositionNames
   | OutFielderDetailedPositionNames;
-export const positionNames: PositionAbilityNames[] = [
-  pitcher,
+export const fielderPositionNames: PositionAbilityNames[] = [
   catcher,
   first,
   second,
   third,
   short,
   outfielder,
+];
+export const positionNames: PositionAbilityNames[] = [
+  pitcher,
+  ...fielderPositionNames,
 ];
 export function isPositionNames(p: string): p is PositionAbilityNames {
   return positionNames.includes(p as PositionAbilityNames);

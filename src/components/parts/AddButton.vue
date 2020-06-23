@@ -1,14 +1,16 @@
 <template>
-    <button @click="$emit('click')">
+    <button :disabled="disabled" @click="$emit('click')">
         <fa-icon :icon="['far', 'plus-square']" />
     </button>
 </template>
 
 <script lang="ts">
 
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Vue, Prop } from 'vue-property-decorator';
 @Component
-export default class AddButton extends Vue{}
+export default class AddButton extends Vue{
+  @Prop() disabled!: boolean
+}
 </script>
 
 <style scoped lang="scss">

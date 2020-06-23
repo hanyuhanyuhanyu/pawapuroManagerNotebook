@@ -3,7 +3,7 @@
         <input type="text" v-model="inputValue">
         <select
             v-model="selected"
-            @change="handlySelcted"
+            @change="handleSelcted"
         >
             <option v-for="s in matches" :key="s">
                 {{s}}
@@ -76,7 +76,7 @@ export default class SearchableSelector extends Vue{
       this.selected = this.matches[0]
       this.error = ""
   }
-  handlySelcted(): void {
+  handleSelcted(): void {
       if(typeof this.selected !== "string" || this.selected.length < 1){
           return
       }
