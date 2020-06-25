@@ -5,7 +5,7 @@ import {
   AbilitySettingErrorMessage,
   PlayerAbilityObject,
 } from "./playerAbility";
-import { SettableValue } from "./abilities/commonType";
+import { SettableValue, PitcherAbilityNames } from "./abilities/commonType";
 import { Either } from "@/util/either";
 import {
   PlayerBasics,
@@ -23,7 +23,25 @@ import {
   PitcherDetailedPositionNames,
   pitcherDetailedNames,
   DetailedPositionAbilityNames,
+  PositionAbilityNames,
+  positionNames,
+  pitcher,
+  positionAbilityDefinitions,
+  starter,
+  fielderPositionNames,
+  isPitcherDetailedPositionNames,
+  comparePitcherDetailedAptitude,
+  reliever,
+  closer,
+  catcher,
+  first,
+  second,
+  third,
+  short,
+  outfielder,
 } from "./abilities/positionsAbility";
+import { start } from "repl";
+import { shoot } from "./abilities/breakBallAbilities";
 
 export interface PlayerMiscs {
   memo: string;
@@ -43,7 +61,7 @@ export class Player {
     return new Player(basic, ability, p.miscs);
   }
   constructor(
-    private basic: PlayerBasics = new PlayerBasics(),
+    private basic: PlayerBasics = PlayerBasics.createNew(),
     private ability: PlayerAbility = new PlayerAbility(),
     private miscs: PlayerMiscs = { memo: "" }
   ) {}
@@ -77,6 +95,28 @@ export class Player {
   }
   get pitcherAbility(): PitcherAbilityWithValue {
     return this.ability.getAbilities().pitcher;
+  }
+  get mainPosition(): DetailedPositionAbilityNames {
+    let pos: DetailedPositionAbilityNames = starter;
+    let buf = -1;
+    pitcherDetailedNames.forEach((p) => {
+      const abl = this.pitcherAbility.basic[p];
+      if (buf < (abl.value as number)) {
+        buf = abl.value as number;
+        pos = p;
+      }
+    });
+    if (buf > 0) {
+      return pos;
+    }
+    fielderPositionNames.forEach((p) => {
+      const abl = this.fielderAbility.position[p];
+      if (buf < (abl.value as number)) {
+        buf = abl.value as number;
+        pos = p;
+      }
+    });
+    return pos;
   }
   public setAbility(
     prop: string,
@@ -187,7 +227,7 @@ export class Player {
     return this.id === player.id;
   }
   public clone(): Player {
-    return new Player(this.basic, this.ability, Object.assign({}, this.miscs));
+    return Player.deserialize(this.toObject());
   }
   public toObject(): PlayerObject {
     return {
@@ -195,5 +235,64 @@ export class Player {
       ability: this.ability.toObject(),
       miscs: this.miscs,
     };
+  }
+  public compare(another: Player): number {
+    const year = this.birthYear - another.birthYear;
+    if (year !== 0) {
+      return year;
+    }
+    const month = this.birthMonth - another.birthMonth;
+    if (month !== 0) {
+      return month;
+    }
+    const date = this.birthDate - another.birthDate;
+    if (date !== 0) {
+      return date;
+    }
+    const thisPos = this.mainPosition;
+    const anPos = another.mainPosition;
+    if (
+      isPitcherDetailedPositionNames(thisPos) &&
+      isPitcherDetailedPositionNames(anPos)
+    ) {
+      return comparePitcherDetailedAptitude(thisPos, anPos);
+    }
+    return (
+      (Array.from(positionAbilityDefinitions[thisPos].number)[0] || 9) -
+      (Array.from(positionAbilityDefinitions[anPos].number)[0] || 9)
+    );
+  }
+  isMainPosition(p: DetailedPositionAbilityNames): boolean {
+    return this.mainPosition === p;
+  }
+  get isStarter(): boolean {
+    return this.isMainPosition(starter);
+  }
+  get isReleiver(): boolean {
+    return this.isMainPosition(reliever);
+  }
+  get isCloser(): boolean {
+    return this.isMainPosition(closer);
+  }
+  get isCatcher(): boolean {
+    return this.isMainPosition(catcher);
+  }
+  get isFirst(): boolean {
+    return this.isMainPosition(first);
+  }
+  get isSecond(): boolean {
+    return this.isMainPosition(second);
+  }
+  get isThird(): boolean {
+    return this.isMainPosition(third);
+  }
+  get isShort(): boolean {
+    return this.isMainPosition(short);
+  }
+  get isOutFielder(): boolean {
+    return this.isMainPosition(outfielder);
+  }
+  get isInfielder(): boolean {
+    return this.isFirst || this.isSecond || this.isThird || this.isShort;
   }
 }

@@ -62,7 +62,7 @@ type FastBallAbility = FastBallAbilityNames;
 type OneOrTwo<T> = [T] | [T, T];
 type ZeroToTwo<T> = [] | OneOrTwo<T>;
 type PitcherBreakingBallAbility = {
-  straight: Set<FastBallAbilityNames>;
+  straight: Partial<Record<FastBallAbilityNames, any>>;
   right: Partial<Record<RightBreakingBallAbilityNames, SettableValue>>;
   rightDown: Partial<Record<RightDownBreakingBallAbilityNames, SettableValue>>;
   down: Partial<Record<DownBreakingBallAbilityNames, SettableValue>>;
@@ -104,33 +104,35 @@ export type PitcherAbilityWithValue = {
   toggles: PitcherTogglableAbilityWithValue;
 };
 
-export const defaultPitcher: PitcherAbilitySet = {
-  basic: {
-    ballSpeed: 80,
-    stamina: 1,
-    controll: 1,
-    startingPitcher: 0,
-    relievePitcher: 0,
-    closingPitcher: 0,
-  },
-  special: {
-    vsPinch: 3,
-    vsLeftyBatter: 3,
-    tough: 3,
-    accelerated: 3,
-    quick: 3,
-    recovery: 3,
-  },
-  balls: {
-    straight: new Set(["straight" as const]),
-    right: {},
-    rightDown: {},
-    down: {},
-    leftDown: {},
-    left: {},
-  },
-  toggles: {},
-};
+function createDefaultPitcher(): PitcherAbilitySet {
+  return {
+    basic: {
+      ballSpeed: 80,
+      stamina: 1,
+      controll: 1,
+      startingPitcher: 0,
+      relievePitcher: 0,
+      closingPitcher: 0,
+    },
+    special: {
+      vsPinch: 3,
+      vsLeftyBatter: 3,
+      tough: 3,
+      accelerated: 3,
+      quick: 3,
+      recovery: 3,
+    },
+    balls: {
+      straight: { straight: 1 },
+      right: {},
+      rightDown: {},
+      down: {},
+      leftDown: {},
+      left: {},
+    },
+    toggles: {},
+  };
+}
 type BasicFielderAbility = Record<BasicFielderAbilityNames, SettableValue>;
 type BasicFielderSpecialAbility = Record<
   BasicFielderSpecialAbilityNames,
@@ -229,11 +231,11 @@ export class PlayerAbility {
     return new PlayerAbility(p.pitcherAbility, p.fielderAbility);
   }
   constructor(
-    p: PitcherAbilitySet = defaultPitcher,
+    p: PitcherAbilitySet = createDefaultPitcher(),
     f: FielderAbilitySet = defaultFielder
   ) {
-    this.pitcherAbility = p;
-    this.fielderAbility = f;
+    this.pitcherAbility = JSON.parse(JSON.stringify(p));
+    this.fielderAbility = JSON.parse(JSON.stringify(f));
   }
   public toObject(): PlayerAbilityObject {
     return {
@@ -404,11 +406,8 @@ export class PlayerAbility {
       FastBallAbilityNames,
       SettableValue
     >> = {};
-    Array.from(balls.straight).forEach((s) => {
-      straightMap[s] = 1;
-    });
     return {
-      straight: addAbilityDef(straightMap),
+      straight: addAbilityDef(balls.straight),
       right: addAbilityDef(balls.right),
       rightDown: addAbilityDef(balls.rightDown),
       down: addAbilityDef(balls.down),
@@ -521,14 +520,16 @@ export class PlayerAbility {
     prop: FastBallAbilityNames,
     value: SettableValue | undefined
   ): Either<AbilitySettingErrorMessage, SettableValue | undefined> {
+    console.log(this.pitcherAbilitiesWithValue.balls);
     if (value === undefined) {
-      this.pitcherAbility.balls.straight.delete(prop);
-    } else if (this.pitcherAbility.balls.straight.has(prop)) {
+      delete this.pitcherAbility.balls.straight[prop];
+    } else if (this.pitcherAbility.balls.straight[prop]) {
       return new Left(HAVING_BALL);
     } else {
-      this.pitcherAbility.balls.straight.add(prop);
+      this.pitcherAbility.balls.straight[prop] = 1;
     }
-    this.pitcherAbility.balls.straight = new Set(
+    this.pitcherAbility.balls.straight = Object.assign(
+      {},
       this.pitcherAbility.balls.straight
     );
     return new Right(value);

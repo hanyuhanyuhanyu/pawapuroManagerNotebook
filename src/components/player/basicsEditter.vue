@@ -127,8 +127,6 @@ export default class PlayerEditter extends Vue{
       return this.player.careerYear(this.year)
   }
   set careerYear(year: number) {
-    console.log(year)
-    console.log(this.careerYear)
       const diff = year - this.careerYear
       this.player.professionalFrom -= diff
   }

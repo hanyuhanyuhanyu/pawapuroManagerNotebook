@@ -222,8 +222,8 @@ export const stamina = "stamina";
 export const controll = "controll";
 
 export const basicPitcherAbilityNamesExceptBallSpeed: BasicPitcherAbilityNames[] = [
-  stamina,
   controll,
+  stamina,
 ];
 export type BasicPitcherAbilityNames =
   | PitcherDetailedPositionNames

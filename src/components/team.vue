@@ -39,49 +39,140 @@
     </div>
     <h3>
       選手一覧
-      <TextButton
-        @click.native="startAdding"
-      >
-        追加
-      </TextButton>
     </h3>
-    <ul>
-      <li
-        v-for="player in team.players" :key="player.id"
-      >
-        {{player.registeredName}}({{player.age(year)}})({{positionsShortHand(player)}})
-        <TextButton
-          @click.native="editPlayer(player)"
-        >
-          {{suspendingEdit(player) ? "編集再開" : "編集"}}
-        </TextButton>
-        <TextButton
-          v-if="suspendingEdit(player)"
-          @click.native="discardEdit(player)"
-        >
-          編集破棄
-        </TextButton>
-        <TextButton
-          @click.native="removePlayer(player)"
-        >
-          削除
-        </TextButton>
-      </li>
-    </ul>
-    <PlayerEditter
-      v-if="addingPlayer !== null"
+    <SimplePlayerEditter
+      ref="simpleEditter"
       :player="addingPlayer"
-      :year="team.year"
+      :year="year"
       @finish="finishAdding"
-      @suspend="suspendAdding"
-    >
-      <template v-slot:finishText>
-        追加
-      </template>
-      <template v-slot:exitText>
-        中断
-      </template>
-    </PlayerEditter>
+    />
+      <h4>
+        投手({{pitcherCount}}人)
+      </h4>
+      <div class="container">
+        <div>
+          <h5>
+            先発({{starters.length}}人)
+          </h5>
+          <SinglePlayerColumn
+            v-for="player in starters"
+            :key="player.id"
+            :player="player"
+            :year="year"
+            @edit="editPlayer(player)"
+            @remove="removePlayer(player)"
+          />
+        </div>
+        <div>
+          <h5>
+            中継ぎ({{relievers.length}}人)
+          </h5>
+          <SinglePlayerColumn
+            v-for="player in relievers"
+            :key="player.id"
+            :player="player"
+            :year="year"
+            @edit="editPlayer(player)"
+            @remove="removePlayer(player)"
+          />
+        </div>
+        <div>
+          <h5>
+            抑え({{closers.length}}人)
+          </h5>
+          <SinglePlayerColumn
+            v-for="player in closers"
+            :key="player.id"
+            :player="player"
+            :year="year"
+            @edit="editPlayer(player)"
+            @remove="removePlayer(player)"
+          />
+        </div>
+      </div>
+      <h4>
+        野手({{fielderCount}}人)
+      </h4>
+      <div class="container">
+        <div>
+          <h5>
+            捕手({{catchers.length}}人)
+          </h5>
+          <SinglePlayerColumn
+            v-for="player in catchers"
+            :key="player.id"
+            :player="player"
+            :year="year"
+            @edit="editPlayer(player)"
+            @remove="removePlayer(player)"
+          />
+        </div>
+        <div>
+          <h5>
+            一塁手({{firsts.length}}人)
+          </h5>
+          <SinglePlayerColumn
+            v-for="player in firsts"
+            :key="player.id"
+            :player="player"
+            :year="year"
+            @edit="editPlayer(player)"
+            @remove="removePlayer(player)"
+          />
+        </div>
+        <div>
+          <h5>
+            二塁手({{seconds.length}}人)
+          </h5>
+          <SinglePlayerColumn
+            v-for="player in seconds"
+            :key="player.id"
+            :player="player"
+            :year="year"
+            @edit="editPlayer(player)"
+            @remove="removePlayer(player)"
+          />
+        </div>
+        <div>
+          <h5>
+            三塁手({{thirds.length}}人)
+          </h5>
+          <SinglePlayerColumn
+            v-for="player in thirds"
+            :key="player.id"
+            :player="player"
+            :year="year"
+            @edit="editPlayer(player)"
+            @remove="removePlayer(player)"
+          />
+        </div>
+        <div>
+          <h5>
+            遊撃手({{shorts.length}}人)
+          </h5>
+          <SinglePlayerColumn
+            v-for="player in shorts"
+            :key="player.id"
+            :player="player"
+            :year="year"
+            @edit="editPlayer(player)"
+            @remove="removePlayer(player)"
+          />
+        </div>
+        <div>
+          <h5>
+            外野手({{outfielders.length}}人)
+          </h5>
+          <SinglePlayerColumn
+            v-for="player in outfielders"
+            :key="player.id"
+            :player="player"
+            :year="year"
+            @edit="editPlayer(player)"
+            @remove="removePlayer(player)"
+          />
+        </div>
+      </div>
     <PlayerEditter
       v-if="edittingPlayer"
       :player="edittingPlayer"
@@ -100,28 +191,32 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from 'vue-property-decorator';
+import { Component, Vue, Prop, Ref } from 'vue-property-decorator';
 import { Team } from '../defs/team';
 import { Player } from '../defs/player';
 import PlayerEditter from "../components/player/PlayerEditter.vue"
 import TextButton from "../components/parts/TextButton.vue"
 import { TeamHistory } from '../defs/teamHistory';
 import { findAbilityDefinition } from '../defs/abilities/abilities';
+import SimplePlayerEditter from "../components/player/SimplePlayerEditter.vue"
+import SinglePlayerColumn from "../components/player/SinglePlayerColumn.vue"
 
 @Component({
   components:{
     PlayerEditter,
-    TextButton
+    TextButton,
+    SimplePlayerEditter,
+    SinglePlayerColumn
   }
 })
 export default class TeamComponent extends Vue{
+  @Ref() readonly simpleEditter!: HTMLInputElement
   @Prop() teamHistory!: TeamHistory
 
   bufPlayer: Player | null = null
   edittingPlayer: Player | null = null
   edittingBuf: Record<string, Player> = {}
-  addingPlayer: Player | null = null
-  addingPlayerBuffer: Player | null = null
+  addingPlayer: Player = new Player()
   watchingYear: number | null = null
   get year(): number {
     return this.watchingYear || this.teamHistory.lastYear
@@ -142,8 +237,13 @@ export default class TeamComponent extends Vue{
     this.year = this.teamHistory.lastYear
   }
   public nextYear(): void {
+    if(this.watchingYear === null){
+      this.watchingYear = this.teamHistory.lastYear
+    }
     this.teamHistory.nextYear()
-    this.year = this.teamHistory.lastYear
+    this.watchingYear = Number(this.teamHistory.lastYear)
+    this.watchingYear += 1
+    this.watchingYear -= 1
     this.update()
   }
   get suspendingEdit(): (player: Player) => boolean {
@@ -165,17 +265,14 @@ export default class TeamComponent extends Vue{
   }
 
   public finishAdding(){
-    if(this.addingPlayer === null){
-      return
-    }
     this.team.addPlayer(this.addingPlayer)
-    this.addingPlayer = null
+    this.addingPlayer = new Player()
     this.update()
-  }
-
-  public suspendAdding(){
-    this.addingPlayerBuffer = this.addingPlayer
-    this.addingPlayer = null
+    // 何故かrerenderingされないので強制的にアップデートするように無意味にyearをいじる
+    const bufYear = this.year
+    this.watchingYear = bufYear+1
+    this.watchingYear = bufYear
+    this.simpleEditter.focus()
   }
 
   public finishEditting(){
@@ -221,5 +318,62 @@ export default class TeamComponent extends Vue{
       return ret
     }
   }
+  get players(): Player[] {
+    return this.team.players.sort((a, b) => a.compare(b))
+  }
+  get starters(): Player[] {
+    return this.players.filter(p => p.isStarter)
+  }
+  get relievers(): Player[] {
+    return this.players.filter(p => p.isReleiver)
+  }
+  get closers(): Player[] {
+    return this.players.filter(p => p.isCloser)
+  }
+  get catchers(): Player[] {
+    return this.players.filter(p => p.isCatcher)
+  }
+  get firsts(): Player[] {
+    return this.players.filter(p => p.isFirst)
+  }
+  get seconds(): Player[] {
+    return this.players.filter(p => p.isSecond)
+  }
+  get thirds(): Player[] {
+    return this.players.filter(p => p.isThird)
+  }
+  get shorts(): Player[] {
+    return this.players.filter(p => p.isShort)
+  }
+  get outfielders(): Player[] {
+    return this.players.filter(p => p.isOutFielder)
+  }
+  get pitcherCount(): number {
+    return [
+      this.starters,
+      this.relievers,
+      this.closers,
+    ].map(a => a.length).reduce((a,b) => a+b)
+  }
+  get fielderCount(): number {
+    return [
+      this.catchers,
+      this.firsts,
+      this.seconds,
+      this.thirds,
+      this.shorts,
+      this.outfielders,
+    ].map(a => a.length).reduce((a,b) => a+b)
+  }
 }
 </script>
+
+<style scoped lang="scss">
+.container {
+  display: flex;
+  flex-direction: row;
+}
+.container > div {
+  margin: 0px 20px;
+}
+</style>

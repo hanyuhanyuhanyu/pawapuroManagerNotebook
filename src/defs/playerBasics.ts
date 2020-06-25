@@ -39,18 +39,19 @@ export interface PlayerBasicInformations {
   professionalFrom: number;
   registrationNameType: RegistrationNameType;
 }
+const defaultMomentSet = {
+  year: 2000,
+  month: 0,
+  date: 1,
+};
 export const defaultInformation: PlayerBasicInformations = {
   id: "default player",
   throwArm: right,
   hittingArm: right,
-  firstName: "名前",
-  lastName: "苗字",
+  firstName: "",
+  lastName: "",
   registeredName: "",
-  birthday: moment().set({
-    year: 2000,
-    month: 0,
-    date: 1,
-  }),
+  birthday: moment().set(defaultMomentSet),
   professionalFrom: 2020,
   registrationNameType: lastName,
 };
@@ -65,12 +66,18 @@ export class PlayerBasics {
     });
     return new PlayerBasics(deserialized);
   }
-  constructor(
-    private information: PlayerBasicInformations = defaultInformation
-  ) {
+  public static createNew(): PlayerBasics {
+    const information = JSON.parse(JSON.stringify(defaultInformation));
     information.id = newId();
-    this.information = information;
+    information.birthday = moment().set(defaultMomentSet);
+    return new PlayerBasics(information);
   }
+  public static load(information: PlayerBasicInformations): PlayerBasics {
+    return new PlayerBasics(information);
+  }
+  protected constructor(
+    private information: PlayerBasicInformations = defaultInformation
+  ) {}
   get id(): string {
     return this.information.id;
   }
@@ -144,10 +151,11 @@ export class PlayerBasics {
       val
     );
   }
-  public age(date: moment.Moment | number): number {
-    if (typeof date === "number") {
-      return date - this.birthYear;
+  public age(date: moment.Moment | number | string): number {
+    if (typeof date === "number" || typeof date === "string") {
+      return Number(date) - this.birthYear;
     }
+    console.log(date);
     return date.diff(this.information.birthday, "year");
   }
   get professionalFrom(): number {
@@ -161,7 +169,7 @@ export class PlayerBasics {
       birthday: this.information.birthday.toString(),
     });
     return {
-      information: this.information,
+      information: serialized,
     };
   }
 }

@@ -124,14 +124,14 @@ export const rightFielder = "rightFielder";
 export const centerFielder = "centerFielder";
 export const leftFielder = "leftFielder";
 
-export type PositionAbilityNames =
-  | typeof pitcher
+export type FielderPositionAbilityNames =
   | typeof catcher
   | typeof first
   | typeof second
   | typeof third
   | typeof short
   | typeof outfielder;
+export type PositionAbilityNames = typeof pitcher | FielderPositionAbilityNames;
 export type PitcherDetailedPositionNames =
   | typeof starter
   | typeof reliever
@@ -144,7 +144,7 @@ export type DetailedPositionAbilityNames =
   | PositionAbilityNames
   | PitcherDetailedPositionNames
   | OutFielderDetailedPositionNames;
-export const fielderPositionNames: PositionAbilityNames[] = [
+export const fielderPositionNames: FielderPositionAbilityNames[] = [
   catcher,
   first,
   second,
@@ -152,6 +152,38 @@ export const fielderPositionNames: PositionAbilityNames[] = [
   short,
   outfielder,
 ];
+export function comparePitcherDetailedAptitude(
+  a: PitcherDetailedPositionNames,
+  b: PitcherDetailedPositionNames
+): number {
+  if (a === b) {
+    return 0;
+  }
+  if (a === starter) {
+    return -1;
+  }
+  if (b === starter) {
+    return 1;
+  }
+  if (a === reliever) {
+    return -1;
+  }
+  if (b === reliever) {
+    return 1;
+  }
+  if (a === closer) {
+    return -1;
+  }
+  if (b === closer) {
+    return 1;
+  }
+  return 0;
+}
+export function isFielderPositionNames(
+  name: string
+): name is FielderPositionAbilityNames {
+  return fielderPositionNames.includes(name as FielderPositionAbilityNames);
+}
 export const positionNames: PositionAbilityNames[] = [
   pitcher,
   ...fielderPositionNames,

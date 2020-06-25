@@ -1,8 +1,7 @@
 <template>
   <div>
-    <a href="/player/add">add player</a>
+    <a href="/team">team</a>
     <br>
-    <a href="/player/view">view player</a>
   </div>
 </template>
 

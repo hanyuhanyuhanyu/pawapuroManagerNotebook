@@ -12,6 +12,7 @@ export interface TeamObject {
 export const PLAYER_DUPLICATE = "already have same player";
 export const PLAYER_NOT_FOUND = "given player not found";
 export class Team {
+  private sorted: Player[] = [];
   static new(
     name: string,
     year: number,
@@ -45,7 +46,9 @@ export class Team {
   private constructor(
     private info: TeamBasicInformation,
     private _year: number
-  ) {}
+  ) {
+    this._year = Number(_year);
+  }
   get id(): string {
     return this.info.id;
   }
@@ -60,6 +63,36 @@ export class Team {
   }
   get players(): Player[] {
     return this.info.players;
+  }
+  get starters(): Player[] {
+    return this.players.filter((p) => p.isStarter);
+  }
+  get relievers(): Player[] {
+    return this.players.filter((p) => p.isReleiver);
+  }
+  get closers(): Player[] {
+    return this.players.filter((p) => p.isCloser);
+  }
+  get catchers(): Player[] {
+    return this.players.filter((p) => p.isCatcher);
+  }
+  get infielders(): Player[] {
+    return this.players.filter((p) => p.isInfielder);
+  }
+  get firsts(): Player[] {
+    return this.players.filter((p) => p.isFirst);
+  }
+  get seconds(): Player[] {
+    return this.players.filter((p) => p.isSecond);
+  }
+  get thirds(): Player[] {
+    return this.players.filter((p) => p.isThird);
+  }
+  get shorts(): Player[] {
+    return this.players.filter((p) => p.isShort);
+  }
+  get outfielders(): Player[] {
+    return this.players.filter((p) => p.isOutFielder);
   }
   protected playerIndex(player: Player): number {
     return this.players.findIndex((p) => player.isSamePlayer(p));

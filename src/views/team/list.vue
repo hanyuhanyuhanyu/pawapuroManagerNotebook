@@ -20,6 +20,9 @@
         <TextButton @click.native="editTeam(team)">
           編集
         </TextButton>
+        <TextButton @click.native="removeTeam(team)">
+          削除
+        </TextButton>
       </li>
     </ul>
     <TextButton @click.native="clearAll">
@@ -63,7 +66,7 @@ export default class TeamList extends Vue {
   }
   public add(): void {
     const team = Team.new(this.newName, this.newYear)
-    this.teams =  [TeamHistory.new(team)]
+    this.teams.push(TeamHistory.new(team))
     this.resetData()
     this.save()
   }
@@ -105,6 +108,18 @@ export default class TeamList extends Vue {
   public editTeam(team: TeamHistory) {
     this.edittingTeam = team
     this.showEdittingTeam = true
+  }
+  public removeTeam(team: TeamHistory) {
+    const index = this.teams.findIndex(t => t.id===team.id)
+    if(index < 0 ){
+      return 
+    }
+    this.teams.splice(index,1)
+    if(this.edittingTeam?.id === team.id){
+      this.edittingTeam = undefined
+    }
+    this.resetData()
+    this.save()
   }
   public save(): void {
     this.rep.saveHistories(this.teams)
